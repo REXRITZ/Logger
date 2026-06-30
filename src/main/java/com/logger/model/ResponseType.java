@@ -11,7 +11,8 @@ public enum ResponseType {
     BAD_REQUEST("400"),
     UNAUTHORIZED("401"),
     NOT_FOUND("404"),
-    INTERNAL_SERVER_ERROR("500");
+    INTERNAL_SERVER_ERROR("500"),
+    UNKNOWN("-1");
 
     private final String code;
 
@@ -28,6 +29,6 @@ public enum ResponseType {
     }
 
     public static ResponseType parse(String code) {
-        return codeMap.get(code);
+        return codeMap.getOrDefault(code, UNKNOWN);
     }
 }

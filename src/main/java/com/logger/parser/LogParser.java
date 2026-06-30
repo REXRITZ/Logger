@@ -14,7 +14,7 @@ public class LogParser {
     private final String regexp =
         "^(?<ip>\\d{1,3}(?:\\.\\d{1,3}){3})\\s" +
         "\\[(?<timestamp>[^\\]]+)\\]\\s" +
-        "(?<method>GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\\s" +
+        "(?<method>GET|POST|PUT|DELETE)\\s" +
         "\"(?<endpoint>[^\"]+)\"\\s" +
         "(?<code>\\d{3})\\s*$";
 

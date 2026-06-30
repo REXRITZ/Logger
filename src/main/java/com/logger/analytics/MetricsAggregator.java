@@ -1,6 +1,7 @@
 package com.logger.analytics;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,7 +32,7 @@ public class MetricsAggregator {
                 codeFreq.merge(entry.statusCode(), 1, Integer::sum);
             });
         } catch(IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException("An error occurred reading logs from path: " + path, e);
         }
         long elapsedNanos = System.nanoTime() - start;
         double elapsedMillis = elapsedNanos / 1_000_000.0;
@@ -51,6 +52,7 @@ public class MetricsAggregator {
                 case INTERNAL_SERVER_ERROR:
                     serverSideFailed += entry.getValue();
                     break;
+                case UNKNOWN:
                 default:
                     invalid += entry.getValue();
             }
