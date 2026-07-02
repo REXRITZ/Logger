@@ -28,7 +28,7 @@ public class MetricsAggregator {
         Map<ResponseType,Integer> codeFreq = new HashMap<>();
         try(Stream<String> lines = Files.lines(filePath)){
             lines.forEach(line -> {
-                LogEntry entry = logParser.parseLogEntry(line);
+                LogEntry entry = logParser.parseLogEntryUsingStrings(line);
                 codeFreq.merge(entry.statusCode(), 1, Integer::sum);
             });
         } catch(IOException e) {

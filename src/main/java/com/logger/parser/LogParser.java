@@ -22,7 +22,7 @@ public class LogParser {
         this.pattern = Pattern.compile(regexp);
     }
 
-    public LogEntry parseLogEntry(String logLine) {
+    public LogEntry parseLogEntryUsingRegex(String logLine) {
         /*
             log entry format:
             "%s [%s] %s \"%s\" %s\n", ip, timestamp, method, endpoint, code
@@ -40,5 +40,40 @@ public class LogParser {
             matcher.group("endpoint"),
             ResponseType.parse(matcher.group("code"))
         );
+    }
+
+    public static LogEntry parseLogEntryUsingStrings(String logLine) {
+        /*
+            log entry format:
+            "%s [%s] %s \"%s\" %s\n", ip, timestamp, method, endpoint, code
+         */
+
+        // TODO: Add more robust failure checks
+        try {
+            String line = logLine.trim();
+
+            int ipEnd = line.indexOf(' ');
+            String ip = line.substring(0, ipEnd);
+
+            int tspStart = line.indexOf('[', ipEnd) + 1;
+            int tspEnd = line.indexOf(']', tspStart);
+            Instant timestamp = Instant.parse(line.substring(tspStart, tspEnd));
+
+            int mStart = tspEnd + 2;
+            int mEnd = line.indexOf(' ', mStart);
+            RequestType type = RequestType.valueOf(line.substring(mStart, mEnd));
+
+            int eStart = line.indexOf('"', tspEnd) + 1;
+            int eEnd = line.indexOf('"', eStart);
+            String endpoint = line.substring(eStart, eEnd);
+
+            int codeStart = eEnd + 2;
+            String codeStr = line.substring(codeStart, codeStart + 3);
+            ResponseType statusCode = ResponseType.parse(codeStr);
+
+            return new LogEntry(ip, timestamp, type, endpoint, statusCode);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid log entry: " + logLine);
+        }
     }
 }
