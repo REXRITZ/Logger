@@ -83,6 +83,7 @@ public class MetricsAggregator {
         ByteBuffer buffer = ByteBuffer.allocate(1);
         long seekEnd = seekStart;
         while(fileChannel.read(buffer) > 0) {
+            buffer.flip();
             byte b = buffer.get();
             buffer.clear();
             if(b == '\n') {
