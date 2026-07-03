@@ -1,15 +1,12 @@
 package com.logger.analytics;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -23,8 +20,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
 
+import com.logger.model.ByteBufferInputStream;
 import com.logger.model.LogEntry;
 import com.logger.model.ResponseType;
 import com.logger.parser.LogParser;
@@ -98,15 +95,18 @@ public class MetricsAggregator {
     private Map<ResponseType, Long> processChunk(FileChannel fileChannel, long seekStart, long limit) throws IOException{
         Map<ResponseType, Long> freq = new HashMap<>();
         MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, seekStart, limit);
-        byte[] bytes = new byte[(int)limit];
-        buffer.get(bytes);
-        buffer.clear();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)))) {
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteBufferInputStream(buffer)))) {
             String line;
             while ((line = reader.readLine()) != null) {
+                if(line.isBlank()) {
+                    continue;
+                }
                 LogEntry entry = LogParser.parseLogEntryUsingStrings(line);
                 freq.merge(entry.statusCode(), 1L, Long::sum);
             }
+        } catch(IllegalArgumentException e) {
+            freq.merge(ResponseType.UNKNOWN, 1L, Long::sum);
         }
         return freq;
     }
